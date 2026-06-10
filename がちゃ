@@ -1,0 +1,429 @@
+<!-- ごほうびガチャ — 子ども用 / 中身・確率はあとから編集可 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ごほうびガチャ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --body:#FFD23C;          /* ガチャ機本体（黄） */
+    --body-dark:#E8A800;
+    --accent:#FF5A5F;        /* レバー赤 */
+    --accent-dark:#D8383D;
+    --glass:#BCE3F2;         /* ドームのガラス */
+    --glass-edge:#8FC9E0;
+    --ink:#3A2D1B;           /* 文字 */
+    --paper:#FFF8E8;         /* 背景紙色 */
+    --tray:#5B4636;          /* 取り出し口 */
+    --win:#FF7AB6;
+    --shadow:rgba(58,45,27,.18);
+    --font:"M PLUS Rounded 1c",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 12%, #FFE3A8 0 8px, transparent 9px) 0 0/64px 64px,
+      radial-gradient(circle at 70% 60%, #FFD9E6 0 7px, transparent 8px) 0 0/64px 64px,
+      linear-gradient(160deg,#FFF1C9,#FFE0EC 60%,#DCF0FA);
+    background-attachment:fixed;
+    min-height:100%;
+    display:flex;justify-content:center;
+    padding:18px;
+  }
+  .app{width:100%;max-width:460px;display:flex;flex-direction:column;}
+
+  /* ---- ヘッダー ---- */
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .logo{display:flex;align-items:baseline;gap:6px;font-weight:800;font-size:26px;letter-spacing:.5px;}
+  .logo small{font-size:13px;font-weight:700;color:var(--accent-dark);background:#fff;padding:2px 8px;border-radius:999px;box-shadow:0 2px 0 var(--shadow);}
+  .iconbtn{
+    border:none;background:#fff;color:var(--ink);font-family:var(--font);font-weight:700;
+    width:46px;height:46px;border-radius:16px;font-size:22px;cursor:pointer;
+    box-shadow:0 4px 0 var(--shadow);transition:transform .08s;
+  }
+  .iconbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow);}
+
+  /* ---- ガチャ機 ---- */
+  .machine{
+    position:relative;background:linear-gradient(180deg,var(--body),var(--body-dark));
+    border-radius:34px;padding:22px 22px 26px;margin-top:6px;
+    box-shadow:0 12px 0 var(--body-dark), 0 20px 36px var(--shadow);
+  }
+  .dome{
+    position:relative;height:200px;border-radius:50% 50% 46% 46%/60% 60% 40% 40%;
+    background:radial-gradient(120% 90% at 35% 25%, #fff 0 6%, var(--glass) 55%, var(--glass-edge));
+    border:6px solid #fff;overflow:hidden;
+    box-shadow:inset 0 -14px 22px rgba(0,0,0,.12), inset 0 10px 18px rgba(255,255,255,.7);
+  }
+  .dome .shine{position:absolute;top:14px;left:24px;width:46px;height:78px;background:rgba(255,255,255,.65);border-radius:50%;transform:rotate(20deg);filter:blur(2px);}
+  .balls{position:absolute;inset:0;}
+  .ball{position:absolute;width:34px;height:34px;border-radius:50%;box-shadow:inset -5px -6px 0 rgba(0,0,0,.12), inset 4px 4px 0 rgba(255,255,255,.55);}
+
+  .panel{
+    margin-top:16px;background:#fff;border-radius:20px;padding:14px;
+    box-shadow:inset 0 -4px 0 #EADBBE;display:flex;align-items:center;gap:14px;
+  }
+  /* レバー（ボタン） */
+  .knob{
+    flex:0 0 auto;width:92px;height:92px;border-radius:50%;cursor:pointer;border:none;
+    background:radial-gradient(circle at 38% 32%, #fff 0 8%, var(--accent) 40%, var(--accent-dark));
+    box-shadow:0 6px 0 var(--accent-dark), 0 10px 16px var(--shadow);
+    position:relative;transition:transform .1s;
+    animation:invite 1.6s ease-in-out infinite;
+  }
+  .knob::after{content:"";position:absolute;top:50%;left:50%;width:54px;height:14px;background:#fff;border-radius:8px;transform:translate(-50%,-50%);box-shadow:0 2px 0 rgba(0,0,0,.12);}
+  .knob.turning{animation:spin .7s cubic-bezier(.4,1.4,.5,1);}
+  .knob:active{transform:translateY(4px);box-shadow:0 2px 0 var(--accent-dark);}
+  .knob[disabled]{animation:none;opacity:.65;cursor:default;}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes invite{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .panel .cta{display:flex;flex-direction:column;gap:2px;}
+  .panel .cta b{font-size:22px;font-weight:800;}
+  .panel .cta span{font-size:13px;font-weight:700;color:#9a7d3e;}
+
+  /* 取り出し口 */
+  .tray{
+    margin:16px auto 0;width:160px;height:52px;border-radius:0 0 16px 16px;
+    background:linear-gradient(180deg,#3d2e22,var(--tray));position:relative;
+    box-shadow:inset 0 6px 12px rgba(0,0,0,.45);
+  }
+  .tray::before{content:"とりだし口";position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.18);padding:2px 8px;border-radius:8px;}
+
+  /* ---- 落ちてくるカプセル（演出） ---- */
+  .stage{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(40,28,12,.55);backdrop-filter:blur(2px);padding:24px;}
+  .stage.show{display:flex;}
+  .capsule-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
+  .capsule{position:relative;width:150px;height:150px;}
+  .half{position:absolute;left:0;width:150px;height:75px;transition:transform .5s cubic-bezier(.5,-0.4,.4,1.4), opacity .4s;}
+  .half.top{top:0;border-radius:75px 75px 8px 8px;}
+  .half.bot{bottom:0;border-radius:8px 8px 75px 75px;background:#fff !important;box-shadow:inset 0 -8px 0 rgba(0,0,0,.08);}
+  .half.top::after{content:"";position:absolute;top:14px;left:26px;width:34px;height:40px;background:rgba(255,255,255,.6);border-radius:50%;filter:blur(1px);}
+  .capsule.drop{animation:drop .9s cubic-bezier(.3,.8,.4,1);}
+  @keyframes drop{0%{transform:translateY(-360px) scale(.7)}60%{transform:translateY(20px) scale(1)}75%{transform:translateY(-12px)}100%{transform:translateY(0)}}
+  .capsule.open .half.top{transform:translateY(-120px) rotate(-12deg);opacity:0;}
+  .capsule.open .half.bot{transform:translateY(120px);opacity:0;}
+
+  .prize{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:96px;opacity:0;transform:scale(.2);transition:transform .5s cubic-bezier(.4,1.5,.5,1), opacity .4s;}
+  .capsule.open ~ .prize{opacity:1;transform:scale(1);}
+
+  .result-card{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;opacity:0;transform:translateY(14px);transition:.4s .35s;}
+  .stage.revealed .result-card{opacity:1;transform:none;}
+  .result-card .tag{display:inline-block;font-weight:800;font-size:15px;padding:4px 14px;border-radius:999px;margin-bottom:10px;}
+  .tag.win{background:var(--win);}
+  .tag.lose{background:#9aa7b0;}
+  .result-card h2{margin:0 0 16px;font-size:30px;font-weight:800;text-shadow:0 3px 8px rgba(0,0,0,.35);}
+  .again{border:none;font-family:var(--font);font-weight:800;font-size:18px;color:var(--ink);background:#FFD23C;padding:14px 30px;border-radius:16px;cursor:pointer;box-shadow:0 5px 0 #C99400;}
+  .again:active{transform:translateY(3px);box-shadow:0 2px 0 #C99400;}
+
+  .conf{position:fixed;top:-10px;width:11px;height:16px;z-index:31;pointer-events:none;border-radius:2px;}
+
+  /* ---- 設定画面 ---- */
+  .settings{display:none;}
+  .settings.show{display:block;}
+  .play.hide{display:none;}
+  .settings h1{font-size:20px;font-weight:800;margin:4px 0 4px;}
+  .hint{font-size:13px;font-weight:700;color:#8a7a55;margin:0 0 14px;line-height:1.6;}
+  .row{
+    background:#fff;border-radius:18px;padding:12px;margin-bottom:12px;
+    box-shadow:0 4px 0 var(--shadow);display:grid;grid-template-columns:54px 1fr 78px;gap:10px;align-items:center;
+  }
+  .row .emoji-in{width:54px;height:54px;border:2px solid #F0E6CC;border-radius:14px;text-align:center;font-size:26px;background:#FFFBF0;font-family:var(--font);}
+  .row .name-in{border:2px solid #F0E6CC;border-radius:12px;padding:10px;font-size:16px;font-family:var(--font);font-weight:700;color:var(--ink);width:100%;}
+  .row .w-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .row .w-in{width:64px;border:2px solid #F0E6CC;border-radius:12px;padding:8px;font-size:18px;text-align:center;font-family:var(--font);font-weight:800;color:var(--ink);}
+  .row .meta{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;border-top:2px dashed #F0E6CC;padding-top:10px;margin-top:2px;}
+  .prob{font-size:14px;font-weight:800;color:var(--accent-dark);}
+  .prob b{font-size:18px;}
+  .winToggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;user-select:none;}
+  .winToggle input{width:20px;height:20px;accent-color:var(--win);}
+  .del{border:none;background:#FFE3E4;color:var(--accent-dark);font-weight:800;font-family:var(--font);border-radius:10px;padding:6px 12px;font-size:13px;cursor:pointer;}
+  .addbtn{width:100%;border:3px dashed var(--body-dark);background:#FFFBF0;color:var(--body-dark);font-family:var(--font);font-weight:800;font-size:16px;padding:14px;border-radius:16px;cursor:pointer;margin-bottom:18px;}
+  .savebar{position:sticky;bottom:0;padding-top:6px;}
+  .save{width:100%;border:none;font-family:var(--font);font-weight:800;font-size:19px;color:#fff;background:linear-gradient(180deg,#FF7AB6,#E8459A);padding:16px;border-radius:18px;cursor:pointer;box-shadow:0 6px 0 #C32E7E;}
+  .save:active{transform:translateY(3px);box-shadow:0 3px 0 #C32E7E;}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-weight:700;padding:12px 22px;border-radius:14px;opacity:0;transition:.3s;z-index:40;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    .knob,.capsule.drop,*{animation:none !important;transition:opacity .2s !important;}
+  }
+</style>
+
+<div class="app">
+  <!-- ===== あそぶ画面 ===== -->
+  <section class="play" id="play">
+    <header>
+      <div class="logo">ごほうびガチャ <small>がんばったね！</small></div>
+      <button class="iconbtn" id="toSettings" title="なかみをへんしゅう">⚙️</button>
+    </header>
+
+    <div class="machine">
+      <div class="dome">
+        <div class="shine"></div>
+        <div class="balls" id="balls"></div>
+      </div>
+      <div class="panel">
+        <button class="knob" id="knob" aria-label="ガチャをまわす"></button>
+        <div class="cta">
+          <b>まわす！</b>
+          <span>レバーをタップ</span>
+        </div>
+      </div>
+      <div class="tray"></div>
+    </div>
+  </section>
+
+  <!-- ===== 設定画面 ===== -->
+  <section class="settings" id="settings">
+    <header>
+      <div class="logo" style="font-size:22px;">なかみのへんしゅう</div>
+      <button class="iconbtn" id="toPlay" title="もどる">✕</button>
+    </header>
+    <p class="hint">ごほうびと、出やすさ（数字が大きいほど出やすい）を決めてね。<br>「あたり」にチェックすると、出たときにお祝いします🎉</p>
+    <div id="rowList"></div>
+    <button class="addbtn" id="addRow">＋ ごほうびを ついか</button>
+    <div class="savebar">
+      <button class="save" id="saveBtn">ほぞんする</button>
+    </div>
+  </section>
+</div>
+
+<!-- 演出ステージ -->
+<div class="stage" id="stage">
+  <div class="capsule-wrap">
+    <div class="capsule" id="capsule">
+      <div class="half top" id="capTop"></div>
+      <div class="half bot"></div>
+    </div>
+    <div class="prize" id="prize">🎁</div>
+    <div class="result-card" id="resultCard">
+      <span class="tag" id="resultTag"></span>
+      <h2 id="resultName"></h2>
+      <button class="again" id="againBtn">もういちど</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="gacha-config-v1";
+  var BALL_COLORS=["#FF5A5F","#FFC93C","#4CC2FF","#8BD450","#C77DFF","#FF8FB1","#FF9F45"];
+  var CAP_COLORS=["#FF5A5F","#4CC2FF","#8BD450","#FFC93C","#C77DFF","#FF8FB1"];
+
+  var DEFAULT={items:[
+    {id:"i1", emoji:"🍫", name:"好きなお菓子", weight:1, win:true},
+    {id:"i2", emoji:"😢", name:"はずれ",      weight:9, win:false}
+  ]};
+
+  var config=null;
+  var mem={};                 // window.storage が無い環境用のフォールバック
+  var hasStore = (typeof window!=="undefined" && window.storage && typeof window.storage.get==="function");
+
+  function storeGet(){
+    if(hasStore) return window.storage.get(KEY);
+    return Promise.resolve(mem[KEY]?{value:mem[KEY]}:null);
+  }
+  function storeSet(v){
+    if(hasStore) return window.storage.set(KEY,v);
+    mem[KEY]=v; return Promise.resolve(true);
+  }
+
+  // ---- DOM ----
+  var $=function(id){return document.getElementById(id);};
+  var playEl=$("play"), setEl=$("settings");
+
+  async function load(){
+    try{
+      var r=await storeGet();
+      if(r&&r.value){ config=JSON.parse(r.value); }
+    }catch(e){ /* 初回など */ }
+    if(!config||!Array.isArray(config.items)||!config.items.length){
+      config=JSON.parse(JSON.stringify(DEFAULT));
+    }
+    fillDome();
+  }
+  async function save(){
+    try{ await storeSet(JSON.stringify(config)); }catch(e){}
+  }
+
+  // ---- ドームの飾りカプセル ----
+  function fillDome(){
+    var box=$("balls"); box.innerHTML="";
+    for(var i=0;i<16;i++){
+      var b=document.createElement("div");
+      b.className="ball";
+      b.style.background=BALL_COLORS[i%BALL_COLORS.length];
+      b.style.left=(6+Math.random()*82)+"%";
+      b.style.top=(8+Math.random()*70)+"%";
+      var s=26+Math.random()*16;
+      b.style.width=s+"px"; b.style.height=s+"px";
+      box.appendChild(b);
+    }
+  }
+
+  // ---- 抽選 ----
+  function pick(){
+    var total=config.items.reduce(function(s,i){return s+Math.max(0,Number(i.weight)||0);},0);
+    if(total<=0) return config.items[0];
+    var r=Math.random()*total;
+    for(var k=0;k<config.items.length;k++){
+      r-=Math.max(0,Number(config.items[k].weight)||0);
+      if(r<0) return config.items[k];
+    }
+    return config.items[config.items.length-1];
+  }
+
+  // ---- まわす ----
+  var knob=$("knob"), stage=$("stage"), capsule=$("capsule"),
+      capTop=$("capTop"), prize=$("prize"),
+      resultCard=$("resultCard"), resultTag=$("resultTag"), resultName=$("resultName");
+
+  function spin(){
+    knob.disabled=true;
+    knob.classList.add("turning");
+    var result=pick();
+    setTimeout(function(){ knob.classList.remove("turning"); reveal(result); }, 650);
+  }
+
+  function reveal(item){
+    var color=CAP_COLORS[Math.floor(Math.random()*CAP_COLORS.length)];
+    capTop.style.background=color;
+    prize.textContent=item.emoji||"🎁";
+    resultName.textContent=item.name||"";
+    if(item.win){ resultTag.textContent="あたり！"; resultTag.className="tag win"; }
+    else{ resultTag.textContent="ざんねん…"; resultTag.className="tag lose"; }
+
+    // リセット
+    stage.classList.remove("revealed");
+    capsule.classList.remove("open","drop");
+    void capsule.offsetWidth;            // リフロー
+    stage.classList.add("show");
+    capsule.classList.add("drop");
+
+    setTimeout(function(){
+      capsule.classList.add("open");
+      setTimeout(function(){
+        stage.classList.add("revealed");
+        if(item.win) confetti();
+      },420);
+    },1000);
+  }
+
+  function closeStage(){
+    stage.classList.remove("show","revealed");
+    capsule.classList.remove("open","drop");
+    knob.disabled=false;
+  }
+
+  // ---- 紙吹雪 ----
+  function confetti(){
+    var colors=["#FF5A5F","#FFC93C","#4CC2FF","#8BD450","#C77DFF","#FF8FB1"];
+    for(var i=0;i<70;i++){
+      (function(i){
+        var c=document.createElement("div");
+        c.className="conf";
+        c.style.background=colors[i%colors.length];
+        c.style.left=(Math.random()*100)+"vw";
+        var dur=1.6+Math.random()*1.4;
+        var rot=(Math.random()*720-360);
+        c.style.transition="transform "+dur+"s linear, opacity "+dur+"s linear";
+        document.body.appendChild(c);
+        requestAnimationFrame(function(){
+          c.style.transform="translateY(108vh) translateX("+(Math.random()*120-60)+"px) rotate("+rot+"deg)";
+          c.style.opacity="0";
+        });
+        setTimeout(function(){ c.remove(); }, dur*1000+200);
+      })(i);
+    }
+  }
+
+  // ---- 設定画面の描画 ----
+  function renderRows(){
+    var list=$("rowList"); list.innerHTML="";
+    config.items.forEach(function(it,idx){
+      var row=document.createElement("div"); row.className="row";
+
+      var em=document.createElement("input");
+      em.className="emoji-in"; em.value=it.emoji||""; em.maxLength=4; em.placeholder="🎁";
+      em.oninput=function(){ it.emoji=em.value; };
+
+      var nm=document.createElement("input");
+      nm.className="name-in"; nm.value=it.name||""; nm.placeholder="ごほうびの なまえ";
+      nm.oninput=function(){ it.name=nm.value; };
+
+      var wWrap=document.createElement("div"); wWrap.className="w-wrap";
+      var wLabel=document.createElement("span"); wLabel.style.fontSize="11px"; wLabel.style.fontWeight="700"; wLabel.style.color="#8a7a55"; wLabel.textContent="出やすさ";
+      var w=document.createElement("input");
+      w.className="w-in"; w.type="number"; w.min="0"; w.value=it.weight;
+      w.oninput=function(){ it.weight=Math.max(0,Number(w.value)||0); updateProbs(); };
+      wWrap.appendChild(wLabel); wWrap.appendChild(w);
+
+      var meta=document.createElement("div"); meta.className="meta";
+      var left=document.createElement("label"); left.className="winToggle";
+      var cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!it.win;
+      cb.onchange=function(){ it.win=cb.checked; };
+      left.appendChild(cb); left.appendChild(document.createTextNode("あたり 🎉"));
+
+      var mid=document.createElement("span"); mid.className="prob"; mid.dataset.idx=idx;
+
+      var del=document.createElement("button"); del.className="del"; del.textContent="けす";
+      del.onclick=function(){
+        if(config.items.length<=1){ toast("さいてい1つは のこしてね"); return; }
+        config.items.splice(idx,1); renderRows();
+      };
+
+      meta.appendChild(left); meta.appendChild(mid); meta.appendChild(del);
+
+      row.appendChild(em); row.appendChild(nm); row.appendChild(wWrap); row.appendChild(meta);
+      list.appendChild(row);
+    });
+    updateProbs();
+  }
+
+  function updateProbs(){
+    var total=config.items.reduce(function(s,i){return s+Math.max(0,Number(i.weight)||0);},0);
+    var cells=document.querySelectorAll(".prob");
+    cells.forEach(function(c){
+      var idx=Number(c.dataset.idx);
+      var w=Math.max(0,Number(config.items[idx].weight)||0);
+      if(total<=0){ c.innerHTML="—"; return; }
+      var pct=Math.round(w/total*100);
+      c.innerHTML="<b>"+w+"/"+total+"</b>　("+pct+"%)";
+    });
+  }
+
+  // ---- 画面切替 ----
+  function showSettings(){ playEl.classList.add("hide"); setEl.classList.add("show"); renderRows(); window.scrollTo(0,0); }
+  function showPlay(){ setEl.classList.remove("show"); playEl.classList.remove("hide"); }
+
+  function toast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove("show"); },1800);
+  }
+
+  // ---- イベント ----
+  knob.addEventListener("click", spin);
+  $("againBtn").addEventListener("click", function(){ closeStage(); setTimeout(spin,250); });
+  stage.addEventListener("click", function(e){ if(e.target===stage) closeStage(); });
+  $("toSettings").addEventListener("click", showSettings);
+  $("toPlay").addEventListener("click", function(){ save(); showPlay(); });
+  $("addRow").addEventListener("click", function(){
+    config.items.push({id:"i"+Date.now(), emoji:"🎁", name:"あたらしいごほうび", weight:1, win:true});
+    renderRows();
+    $("rowList").lastChild.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  $("saveBtn").addEventListener("click", function(){
+    config.items.forEach(function(it){ if(!it.name) it.name="（なまえなし）"; });
+    save(); toast("ほぞんしました ✓"); fillDome(); setTimeout(showPlay,500);
+  });
+
+  load();
+})();
+</script>
